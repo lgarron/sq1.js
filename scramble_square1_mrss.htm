@@ -4,9 +4,16 @@
 <title>Square-1 scrambler</title> 
 <script type="text/javascript" src="raphael-min.js"></script>
 <script type="text/javascript" src="sq1.js"></script>
+<script type="text/javascript" src="mersennetwister.js"></script>
 <script language="JavaScript1.1" type="text/javascript"> 
-<!--
-/* Javascript written by Jaap Scherphuis,  jaapsch a t yahoo d o t com */
+
+/* This scrambler builds on the work of Jaap Scherphuis, Andrew Nelson, Michael Gottlieb, Waltter Souza, and Lucas Garron. Some parts of it haven't cleaned up in a while, but it works. */
+
+mt = new MersenneTwisterObject(new Date() + Math.random());
+setRandomSource(mt);
+
+// Legacy argument parsing, which still works.
+
 var seqlen=40;
 var numcub=5;
 var colorString = "yobwrg";  //In dlburf order. May use any colours in colorList below
@@ -33,7 +40,7 @@ function parse() {
 }
 parse();
 
-
+// Old drawing code (adapted to raphael.js). Also still works.
  
 function colorGet(col) {
 	if (col=="r") return ("#FF0000");
@@ -159,45 +166,67 @@ function drawSq(stickers, shapes, canvas) {
 	}
  
 }
-//-->
 </script> 
+<style>
+h2 {
+	text-align: center;
+	margin: 0px;
+}
+li {
+	padding: 0.2em;
+}
+</style>
 </head> 
 <body bgcolor="white"> 
 
+<div id="status" style="padding: 1em; margin: 1em; font-family: Helvetica; border: 1px solid #888; border-radius: 1em; overflow: scroll; background: #CCC;">
+<center>
+	<h2>WCA Square-1 Scrambler (Markov Random-State)</h2><br>
+	<button onclick="runIt();" onload="this.focus();" style="font-size: 200%; padding: 0.1em 1em;">Scramble!</button>
+</center>
+<ul>
+	<li>Initialization may be as fast as 2.5 seconds, depending on your browser.</li>
+	<li>After initialization, each scramble normally takes a lot less than a second, but some of them may take up to a minute each.</li>
+	<ul>
+		<li>In order to ensure truly random scrambles: If a particular scramble is taking a while, try to be patient instead of retrying.</li>
+	</ul>
+	<li>As of November 2011, this scrambler runs fastest in Google Chrome. If you are having issues running this, consider trying it in Chrome.</li>
+</ul>
+</div>
  
-<form name="frm"> 
 <table border=1 cellpadding=0 cellspacing=0 width="100%" id="tbl"> 
 <tr> 
  
 <td colspan=2 bgcolor='#00c0c0'> 
     <table width="100%"> 
     <tr> 
-        <td><font face="Arial" size=3>Number of scrambles:</font><input name=num size=4 maxlength=2></td> 
-        <td><font face="Arial" size=3>Scramble length:</font><input name=len size=4 maxlength=3></td> 
-	<td><font face='Arial' size=3>Colours (DLBURF):</font><input name=col size=6 maxlength=6></td> 
-    <td><input type="submit" value="Scramble!"></td> 
+    <td><button onclick="toggleStatus();">Toggle Progress Info</button></td> 
+    <td><font face="Arial" size=3>Number of scrambles:</font><input id="num" size=4 maxlength=2 onchange="numcub=this.value"></td> 
+	<td><font face='Arial' size=3>Colours (DLBURF):</font><input id="col" size=6 maxlength=6 onchange="colorString=this.value"></td> 
+    <td><button onclick="runIt();">Scramble!</button></td> 
     </tr> 
     </table> 
 </td> 
 </tr> 
+<tbody id="tbd">
+</tbody>
+</table>
 
-</table></form>
-
-<div id="status" style="padding: 1em;">
-<button onclick="useAlerts = true; alert('Using alerts. There will be 14 alerts after you press \'Go!\', in addition to one per scramble.');">Use Alerts</button> <button onclick="runIt();">Go!</button> (This will take a few seconds, possibly a few minutes if your computer is slow. Pull up the Javascript console in your browser before pressing this, if you know how.)
-</div>
-
- 
 <script language="JavaScript1.1" type="text/javascript">
 
-var useAlerts = false; 
+document.getElementById("num").value=numcub;
+document.getElementById("col").value=colorString;
 
-function runIt() {
-<!--
-document.frm.len.value=seqlen;
-document.frm.num.value=numcub;
-document.frm.col.value=colorString;
+var useAlerts = false; 
  
+function toggleStatus() {
+	if (document.getElementById("status").style.display == "none") {
+		document.getElementById("status").style.display = "block";
+	}
+	else {
+		document.getElementById("status").style.display = "none";
+	}
+}
  
 function remove_duplicates(arr)
 {
@@ -216,6 +245,14 @@ var ty = ["c","c","c","c","c","c","c","c","e","e","e","e","e","e","e","e"];
 //var col = ["rb","b","bo","o","og","g","gr","r","r","rg","g","go","o","ob","b","br"];
 var col = ["12","24","45","51","21","42","54","15","2","4","5","1","2","4","5","1"]
 
+
+function runIt() {
+
+document.getElementById("dateGenerated").innerHTML = "Scrambles generated: " + new Date().toUTCString();
+
+document.getElementById("status").style.display = "block";
+document.getElementById("status").innerHTML = "<h2 style=\"margin: 0px;\">Generating Square-1 Scrambles...</h2>";
+
 function cb(str) {
 	if (useAlerts) {
 		alert(str);
@@ -225,8 +262,7 @@ function cb(str) {
 	}
 }
 
-square1Solver_initialize(cb);
-
+function genScrambles() {
 // From sq1.js
 initializationStartTime = new Date().getTime();
 initializationLastTime = initializationStartTime;
@@ -236,16 +272,17 @@ logStatus = function(statusString) {
     var initializationCurrentTime, outString;
     statusI++;
     initializationCurrentTime = new Date().getTime();
-    outString = "" + statusI + ". " + statusString + " [" + (initializationCurrentTime - initializationLastTime) + "ms split, " + (initializationCurrentTime - initializationStartTime) + "ms total]";
+    outString = statusString + " [" + (initializationCurrentTime - initializationLastTime) + "ms split, " + (initializationCurrentTime - initializationStartTime) + "ms total]";
     initializationLastTime = initializationCurrentTime;
     console.log(outString);
       cb(outString);
   };
 
+document.getElementById("tbd").innerHTML = "";
 logStatus("Generating " + numcub + " scrambles.");
 
-for(var i=0; i<numcub; i++){
 
+function scrambleRecursive(i, n) {
 
 	state = square1SolverGetRandomState();
 
@@ -287,18 +324,37 @@ for(var i=0; i<numcub; i++){
 	}
 	
 	var stickers = (b.concat(c)).replace(/0/g,colorString[0]).replace(/1/g,colorString[1]).replace(/2/g,colorString[2]).replace(/3/g,colorString[3]).replace(/4/g,colorString[4]).replace(/5/g,colorString[5]);
-	var url="<script type='text/javascript'><\/script>";
-	var table = document.getElementById("tbl");
-	table.innerHTML += ( "<tr><td><font face='Arial' size=3><b>&nbsp;&nbsp;" + i + ". " + scrambleString + "<\/b><\/font><\/td><td>"
-		+ "<div style='position:relative;height:100px;width:200px;text' id='scramble" + i + "'>" + url + "<\/td><\/tr>");
+	var table = document.getElementById("tbd");
+	table.innerHTML += ( "<tr><td><font face='Arial' size=3><b>&nbsp;&nbsp;" + i + ". " + scrambleString + "<\/b><\/font><\/td><td><center>"
+		+ "<div style='position:relative;height:100px;width:200px;text' id='scramble" + i + "'/></center><\/td><\/tr>");
 	drawSq(stickers, a, "scramble" + i);
 
-	logStatus("Generated scramble #" + (i+1) + ".");
-
+	logStatus("Generated scramble #" + (i) + ".");
+	
+	if (i < n) {
+		setTimeout(function () {scrambleRecursive(i+1, n);}, 0);
+	}
+	else {
+		setTimeout(function () {document.getElementById("status").style.display = "none";}, 1000);
+	}
+};
+setTimeout(function () {scrambleRecursive(1, numcub);}, 0);
 }
+
+if (!square1SolverInitialized) {
+	square1Solver_initialize(genScrambles, cb);
+}
+else {
+	genScrambles();
+}
+
 };
 //-->
-</script> 
-<font face='Arial' size=2>version: November 16, 2011</font> 
+</script>
+<div id="footer" style="margin: 0.5em; font-family: Helvetica;">
+Scrambler version: November 16, 2011<br>
+<div id="dateGenerated">
+</div>
+</div>
 </body> 
 </html> 

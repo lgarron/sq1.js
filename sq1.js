@@ -9,6 +9,7 @@ TODO:
 - Try to ini using pregenerated JSON.
 - Try to optimize array (byte arrays?).
 - Mersenne Twister for PRNG
+- Figure out middle slice stuff.
 
 */
 /*
@@ -220,12 +221,15 @@ var square1Solver_edgesCombinationMove;
 var square1Solver_cornersDistance;
 var square1Solver_edgesDistance;
 
-square1Solver_initialize = function(callback) {
+square1Solver_initialize = function(doneCallback, statusCallback) {
   var combination, corners, depth, distanceTable, edges, fringe, i, iii, initializationLastTime, initializationStartTime, isTopCorner, isTopEdge, j, k, logStatus, move, move01, move03, move10, move30, moveTwist, moveTwistBottom, moveTwistTop, nVisited, newFringe, next, nextBottom, nextCornerPermutation, nextCornersCombination, nextEdgeCombination, nextEdgesPermutation, nextTop, result, state, statusI, _i, _len;
   initializationStartTime = new Date().getTime();
   initializationLastTime = initializationStartTime;
   statusI = 0;
-  
+
+  ini = 0;
+  iniParts = new Array();
+
   logStatus = function(statusString) {
     var initializationCurrentTime, outString;
     statusI++;
@@ -233,193 +237,236 @@ square1Solver_initialize = function(callback) {
     outString = "" + statusI + ". " + statusString + " [" + (initializationCurrentTime - initializationLastTime) + "ms split, " + (initializationCurrentTime - initializationStartTime) + "ms total]";
     initializationLastTime = initializationCurrentTime;
     console.log(outString);
-    if (callback != null) {
-      callback(outString);
+    if (statusCallback != null) {
+      statusCallback(outString);
     }
   };
-  logStatus("Initializing Square-1 Solver.");
-  move10 = [11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
-  move = move10;
-  for (i = 0; i <= 10; i++) {
-    square1Solver_moves1[i] = move;
-    move = stateMultiply(move, move10);
-  }
-  move01 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 12];
-  move = move01;
-  for (i = 0; i <= 10; i++) {
-    square1Solver_moves1[11 + i] = move;
-    move = stateMultiply(move, move01);
-  }
-  moveTwist = [0, 1, 19, 18, 17, 16, 15, 14, 8, 9, 10, 11, 12, 13, 7, 6, 5, 4, 3, 2, 20, 21, 22, 23];
-  square1Solver_moves1[22] = moveTwist;
-  logStatus("Generating shape tables. (1/3)");
-  square1Solver_evenShapeDistance[stateGetShapeIndex(idState)] = 0;
-  fringe = new Array();
-  fringe.push(idState);
-  iii = 0;
-  depth = 0;
-  while (fringe.length > 0) {
-    newFringe = new Array();
-    for (_i = 0, _len = fringe.length; _i < _len; _i++) {
-      state = fringe[_i];
-      if (stateIsTwistable(state)) {
-        square1Solver_shapes.push(state);
-      }
-      for(i = 0; i < square1Solver_moves1.length; i++) {
-        if (!(i === 22 && !stateIsTwistable(state))) {
-          next = stateMultiply(state, square1Solver_moves1[i]);
-          distanceTable = null;
-          if (isEvenPermutation(stateGetPiecesPermutation(next))) {
-            distanceTable = square1Solver_evenShapeDistance;
-          } else {
-            distanceTable = square1Solver_oddShapeDistance;
-          }
-          if (!(distanceTable[stateGetShapeIndex(next)] != null)) {
-            distanceTable[stateGetShapeIndex(next)] = depth + 1;
-            newFringe.push(next);
+
+  iniParts[ini++] = function() {
+  
+    logStatus("Initializing Square-1 Solver.");
+    
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    move10 = [11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+    move = move10;
+    for (i = 0; i <= 10; i++) {
+      square1Solver_moves1[i] = move;
+      move = stateMultiply(move, move10);
+    }
+    move01 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 12];
+    move = move01;
+    for (i = 0; i <= 10; i++) {
+      square1Solver_moves1[11 + i] = move;
+      move = stateMultiply(move, move01);
+    }
+    moveTwist = [0, 1, 19, 18, 17, 16, 15, 14, 8, 9, 10, 11, 12, 13, 7, 6, 5, 4, 3, 2, 20, 21, 22, 23];
+    square1Solver_moves1[22] = moveTwist;
+
+    logStatus("Generating shape tables. (1/3)");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1Solver_evenShapeDistance[stateGetShapeIndex(idState)] = 0;
+    fringe = new Array();
+    fringe.push(idState);
+    iii = 0;
+    depth = 0;
+    while (fringe.length > 0) {
+      newFringe = new Array();
+      for (_i = 0, _len = fringe.length; _i < _len; _i++) {
+        state = fringe[_i];
+        if (stateIsTwistable(state)) {
+          square1Solver_shapes.push(state);
+        }
+        for(i = 0; i < square1Solver_moves1.length; i++) {
+          if (!(i === 22 && !stateIsTwistable(state))) {
+            next = stateMultiply(state, square1Solver_moves1[i]);
+            distanceTable = null;
+            if (isEvenPermutation(stateGetPiecesPermutation(next))) {
+              distanceTable = square1Solver_evenShapeDistance;
+            } else {
+              distanceTable = square1Solver_oddShapeDistance;
+            }
+            if (!(distanceTable[stateGetShapeIndex(next)] != null)) {
+              distanceTable[stateGetShapeIndex(next)] = depth + 1;
+              newFringe.push(next);
+            }
           }
         }
       }
-    }
-    fringe = newFringe;
-    depth++;
-    if (depth === 10 || depth === 12 || depth === 15) {
-      logStatus("Shape Table Depth: " + depth + "/20");
-    }
-  }
-  move30 = [[3, 0, 1, 2, 4, 5, 6, 7], [3, 0, 1, 2, 4, 5, 6, 7]];
-  move03 = [[0, 1, 2, 3, 5, 6, 7, 4], [0, 1, 2, 3, 5, 6, 7, 4]];
-  moveTwistTop = [[0, 6, 5, 3, 4, 2, 1, 7], [6, 5, 2, 3, 4, 1, 0, 7]];
-  moveTwistBottom = [[0, 6, 5, 3, 4, 2, 1, 7], [0, 5, 4, 3, 2, 1, 6, 7]];
-  square1Solver_moves2 = [move30, cubeStateMultiply(move30, move30), cubeStateMultiply(cubeStateMultiply(move30, move30), move30), move03, cubeStateMultiply(move03, move03), cubeStateMultiply(cubeStateMultiply(move03, move03), move03), moveTwistTop, moveTwistBottom];
-  logStatus("Generating move tables. (2/3)");
-  logStatus("Corner permutation move table...");
-  square1Solver_cornersPermutationMove = make2DArray(square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_moves2.length);
-  for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS; i++) {
-    state = [IndexMappingIndexToPermutation(i, 8), makeArrayZeroed(8)];
-    for(j = 0; j < square1Solver_moves2.length; j++) {
-      square1Solver_cornersPermutationMove[i][j] = IndexMappingPermutationToIndex(cubeStateMultiply(state, square1Solver_moves2[j])[0]);
-    }
-  }
-  logStatus("Corner combination move table...");
-  square1Solver_cornersCombinationMove = make2DArray(square1Solver_N_CORNERS_COMBINATIONS, square1Solver_moves2.length);
-  for(i = 0; i < square1Solver_N_CORNERS_COMBINATIONS; i++) {
-    combination = IndexMappingIndexToCombination(i, 4, 8);
-    corners = makeArray(8);
-    nextTop = 0;
-    nextBottom = 4;
-    for(j = 0; j < corners.length; j++) {
-      if (combination[j]) {
-        corners[j] = nextTop++;
-      } else {
-        corners[j] = nextBottom++;
+      fringe = newFringe;
+      depth++;
+      if (depth === 10 || depth === 12 || depth === 15) {
+        logStatus("Shape Table Depth: " + depth + "/20");
       }
     }
-    state = [corners, makeArray(8)];
-    for(j = 0; j < square1Solver_moves2.length; j++) {
-      result = cubeStateMultiply(state, square1Solver_moves2[j]);
-      isTopCorner = makeArray(8);
-      for(k = 0; k < isTopCorner.length; k++) {
-        isTopCorner[k] = result[0][k] < 4;
-      }
-      square1Solver_cornersCombinationMove[i][j] = IndexMappingCombinationToIndex(isTopCorner, 4);
-    }
-  }
-  logStatus("Edges permutation move table...");
-  square1Solver_edgesPermutationMove = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_moves2.length);
-  for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS; i++) {
-    state = [makeArrayZeroed(8), IndexMappingIndexToPermutation(i, 8)];
-    for(j = 0; j < square1Solver_moves2.length; j++) {
-      square1Solver_edgesPermutationMove[i][j] = IndexMappingPermutationToIndex(cubeStateMultiply(state, square1Solver_moves2[j])[0]);
-    }
-  }
-  logStatus("Edges combination move table...");
-  square1Solver_edgesCombinationMove = make2DArray(square1Solver_N_EDGES_COMBINATIONS, square1Solver_moves2.length);
-  for(i = 0; i < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; i++) {
-    combination = IndexMappingIndexToCombination(i, 4, 8);
-    edges = makeArray(8);
-    nextTop = 0;
-    nextBottom = 4;
-    for(j = 0; j < 8 - 1 + 1; j++) {
-      if (combination[j]) {
-        edges[j] = nextTop++;
-      } else {
-        edges[j] = nextBottom++;
+    move30 = [[3, 0, 1, 2, 4, 5, 6, 7], [3, 0, 1, 2, 4, 5, 6, 7]];
+    move03 = [[0, 1, 2, 3, 5, 6, 7, 4], [0, 1, 2, 3, 5, 6, 7, 4]];
+    moveTwistTop = [[0, 6, 5, 3, 4, 2, 1, 7], [6, 5, 2, 3, 4, 1, 0, 7]];
+    moveTwistBottom = [[0, 6, 5, 3, 4, 2, 1, 7], [0, 5, 4, 3, 2, 1, 6, 7]];
+    square1Solver_moves2 = [move30, cubeStateMultiply(move30, move30), cubeStateMultiply(cubeStateMultiply(move30, move30), move30), move03, cubeStateMultiply(move03, move03), cubeStateMultiply(cubeStateMultiply(move03, move03), move03), moveTwistTop, moveTwistBottom];
+
+
+    logStatus("Generating move tables. (2/3)");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    logStatus("Corner permutation move table...");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1Solver_cornersPermutationMove = make2DArray(square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_moves2.length);
+    for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS; i++) {
+      state = [IndexMappingIndexToPermutation(i, 8), makeArrayZeroed(8)];
+      for(j = 0; j < square1Solver_moves2.length; j++) {
+        square1Solver_cornersPermutationMove[i][j] = IndexMappingPermutationToIndex(cubeStateMultiply(state, square1Solver_moves2[j])[0]);
       }
     }
-    state = [makeArray(8), edges];
-    for(j = 0; j < square1Solver_moves2.length - 1 + 1; j++) {
-      result = cubeStateMultiply(state, square1Solver_moves2[j]);
-      isTopEdge = makeArray(8);
-      for(k = 0; k < isTopEdge.length - 1 + 1; k++) {
-        isTopEdge[k] = result[1][k] < 4;
+    
+    logStatus("Corner combination move table...");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1Solver_cornersCombinationMove = make2DArray(square1Solver_N_CORNERS_COMBINATIONS, square1Solver_moves2.length);
+    for(i = 0; i < square1Solver_N_CORNERS_COMBINATIONS; i++) {
+      combination = IndexMappingIndexToCombination(i, 4, 8);
+      corners = makeArray(8);
+      nextTop = 0;
+      nextBottom = 4;
+      for(j = 0; j < corners.length; j++) {
+        if (combination[j]) {
+          corners[j] = nextTop++;
+        } else {
+          corners[j] = nextBottom++;
+        }
       }
-      square1Solver_edgesCombinationMove[i][j] = IndexMappingCombinationToIndex(isTopEdge, 4);
+      state = [corners, makeArray(8)];
+      for(j = 0; j < square1Solver_moves2.length; j++) {
+        result = cubeStateMultiply(state, square1Solver_moves2[j]);
+        isTopCorner = makeArray(8);
+        for(k = 0; k < isTopCorner.length; k++) {
+          isTopCorner[k] = result[0][k] < 4;
+        }
+        square1Solver_cornersCombinationMove[i][j] = IndexMappingCombinationToIndex(isTopCorner, 4);
+      }
     }
-  }
-  logStatus("Generating prune tables. (3/3)");
-  logStatus("Corners distance prune table...");
-  square1Solver_cornersDistance = make2DArray(square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_N_EDGES_COMBINATIONS);
-  for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS - 1 + 1; i++) {
-    for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; j++) {
-      square1Solver_cornersDistance[i][j] = -1;
+
+    logStatus("Edges permutation move table...");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1Solver_edgesPermutationMove = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_moves2.length);
+    for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS; i++) {
+      state = [makeArrayZeroed(8), IndexMappingIndexToPermutation(i, 8)];
+      for(j = 0; j < square1Solver_moves2.length; j++) {
+        square1Solver_edgesPermutationMove[i][j] = IndexMappingPermutationToIndex(cubeStateMultiply(state, square1Solver_moves2[j])[0]);
+      }
     }
-  }
-  square1Solver_cornersDistance[0][0] = 0;
-  while (true) {
-    nVisited = 0;
+
+    logStatus("Edges combination move table...");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1Solver_edgesCombinationMove = make2DArray(square1Solver_N_EDGES_COMBINATIONS, square1Solver_moves2.length);
+    for(i = 0; i < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; i++) {
+      combination = IndexMappingIndexToCombination(i, 4, 8);
+      edges = makeArray(8);
+      nextTop = 0;
+      nextBottom = 4;
+      for(j = 0; j < 8 - 1 + 1; j++) {
+        if (combination[j]) {
+          edges[j] = nextTop++;
+        } else {
+          edges[j] = nextBottom++;
+        }
+      }
+      state = [makeArray(8), edges];
+      for(j = 0; j < square1Solver_moves2.length - 1 + 1; j++) {
+        result = cubeStateMultiply(state, square1Solver_moves2[j]);
+        isTopEdge = makeArray(8);
+        for(k = 0; k < isTopEdge.length - 1 + 1; k++) {
+          isTopEdge[k] = result[1][k] < 4;
+        }
+        square1Solver_edgesCombinationMove[i][j] = IndexMappingCombinationToIndex(isTopEdge, 4);
+      }
+    }
+
+    logStatus("Generating prune tables. (3/3)");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    logStatus("Corners distance prune table...");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1Solver_cornersDistance = make2DArray(square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_N_EDGES_COMBINATIONS);
     for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS - 1 + 1; i++) {
       for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; j++) {
-        if (square1Solver_cornersDistance[i][j] === depth) {
-          for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
-            nextCornerPermutation = square1Solver_cornersPermutationMove[i][k];
-            nextEdgeCombination = square1Solver_edgesCombinationMove[j][k];
-            if (square1Solver_cornersDistance[nextCornerPermutation][nextEdgeCombination] < 0) {
-              con;
-              square1Solver_cornersDistance[nextCornerPermutation][nextEdgeCombination] = depth + 1;
-              nVisited++;
+        square1Solver_cornersDistance[i][j] = -1;
+      }
+    }
+    square1Solver_cornersDistance[0][0] = 0;
+    while (true) {
+      nVisited = 0;
+      for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS - 1 + 1; i++) {
+        for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; j++) {
+          if (square1Solver_cornersDistance[i][j] === depth) {
+            for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
+              nextCornerPermutation = square1Solver_cornersPermutationMove[i][k];
+              nextEdgeCombination = square1Solver_edgesCombinationMove[j][k];
+              if (square1Solver_cornersDistance[nextCornerPermutation][nextEdgeCombination] < 0) {
+                con;
+                square1Solver_cornersDistance[nextCornerPermutation][nextEdgeCombination] = depth + 1;
+                nVisited++;
+              }
             }
           }
         }
       }
+      depth++;
+      if (!(nVisited > 0)) {
+        break;
+      }
     }
-    depth++;
-    if (!(nVisited > 0)) {
-      break;
-    }
-  }
-  logStatus("Edges distance prune table...");
-  square1Solver_edgesDistance = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_N_CORNERS_COMBINATIONS);
-  for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS - 1 + 1; i++) {
-    for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS - 1 + 1; j++) {
-      square1Solver_edgesDistance[i][j] = -1;
-    }
-  }
-  square1Solver_edgesDistance[0][0] = 0;
-  depth = 0;
-  while (true) {
-    nVisited = 0;
+
+    logStatus("Edges distance prune table...");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1Solver_edgesDistance = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_N_CORNERS_COMBINATIONS);
     for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS - 1 + 1; i++) {
       for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS - 1 + 1; j++) {
-        if (square1Solver_edgesDistance[i][j] === depth) {
-          for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
-            nextEdgesPermutation = square1Solver_edgesPermutationMove[i][k];
-            nextCornersCombination = square1Solver_cornersCombinationMove[j][k];
-            if (square1Solver_edgesDistance[nextEdgesPermutation][nextCornersCombination] < 0) {
-              square1Solver_edgesDistance[nextEdgesPermutation][nextCornersCombination] = depth + 1;
-              nVisited++;
+        square1Solver_edgesDistance[i][j] = -1;
+      }
+    }
+    square1Solver_edgesDistance[0][0] = 0;
+
+    depth = 0;
+    while (true) {
+      nVisited = 0;
+      for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS - 1 + 1; i++) {
+        for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS - 1 + 1; j++) {
+          if (square1Solver_edgesDistance[i][j] === depth) {
+            for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
+              nextEdgesPermutation = square1Solver_edgesPermutationMove[i][k];
+              nextCornersCombination = square1Solver_cornersCombinationMove[j][k];
+              if (square1Solver_edgesDistance[nextEdgesPermutation][nextCornersCombination] < 0) {
+                square1Solver_edgesDistance[nextEdgesPermutation][nextCornersCombination] = depth + 1;
+                nVisited++;
+              }
             }
           }
         }
       }
+      depth++;
+      if (!(nVisited > 0)) {
+        break;
+      }
     }
-    depth++;
-    if (!(nVisited > 0)) {
-      break;
+      
+    logStatus("Done initializing Square-1 Solver.");
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+
+    square1SolverInitialized = true;
+    if (doneCallback != null) {
+      doneCallback();
     }
   }
-  logStatus("Done initializing Square-1 Solver.");
-  return square1SolverInitialized = true;
+
+  ini=0;
+  iniParts[ini++]();
 };
 
 square1SolverSolve = function(state) {
@@ -448,7 +495,7 @@ square1SolverSolve = function(state) {
         top = 0;
         bottom = 0;
       }
-      sequence.push("/");
+      sequence.push(" / ");
     }
   }
   if (top !== 0 || bottom !== 0) {
@@ -488,7 +535,7 @@ square1SolverGenerate = function(state) {
         top = 0;
         bottom = 0;
       }
-      sequence.push("/");
+      sequence.push(" / ");
     }
   }
   if (top !== 0 || bottom !== 0) {
@@ -635,8 +682,15 @@ square1SolverGetRandomState = function() {
   return permutation;
 };
 
+var square1RandomSource = Math;
+
+// If we have a better (P)RNG:
+setRandomSource = function(src) {
+  square1RandomSource = src;
+}
+
 randomIntBelow = function(n) {
-  return Math.floor(Math.random() * n);
+  return Math.floor(square1RandomSource.random() * n);
 };
 
 isEvenPermutation = function(permutation) {
