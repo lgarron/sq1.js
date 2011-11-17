@@ -263,7 +263,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     moveTwist = [0, 1, 19, 18, 17, 16, 15, 14, 8, 9, 10, 11, 12, 13, 7, 6, 5, 4, 3, 2, 20, 21, 22, 23];
     square1Solver_moves1[22] = moveTwist;
 
-    logStatus("Generating shape tables. (1/3)");
+    logStatus("Generating shape tables.");
     /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
 
     square1Solver_evenShapeDistance[stateGetShapeIndex(idState)] = 0;
@@ -307,7 +307,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     square1Solver_moves2 = [move30, cubeStateMultiply(move30, move30), cubeStateMultiply(cubeStateMultiply(move30, move30), move30), move03, cubeStateMultiply(move03, move03), cubeStateMultiply(cubeStateMultiply(move03, move03), move03), moveTwistTop, moveTwistBottom];
 
 
-    logStatus("Generating move tables. (2/3)");
+    logStatus("Generating move tables.");
     /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
 
     logStatus("Corner permutation move table...");
@@ -386,7 +386,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
       }
     }
 
-    logStatus("Generating prune tables. (3/3)");
+    logStatus("Generating prune tables.");
     /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
 
     logStatus("Corners distance prune table...");
