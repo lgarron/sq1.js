@@ -1,7 +1,19 @@
+###
+
+sq1.coffee
+
+Ported from PPT, written Walter Souza: https://bitbucket.org/walter/puzzle-timer/src/7049018bbdc7/src/com/puzzletimer/solvers/Square1Solver.java
+Ported by Lucas Garron, November 16, 2011.
+
+TODO:
+- Try to ini using pregenerated JSON.
+- Try to optimize array (byte arrays?).
+- Mersenne Twister for PRNG
 
 ###
-    From QBX
-    TODO: See if this actually helps.
+
+###
+    Trick from QBX (by Evan Gates).
 ###
 makeArray = (len) ->
     array = new Array
@@ -24,11 +36,6 @@ make2DArray = (lenOuter, lenInner) ->
 ###
     STATE
 ###
-
-logFirst100Count = 0
-logFirst100 = (str) ->
-    if (++logFirst100Count < 100)
-        console.log(str)
 
 class IndexMapping
 
@@ -60,51 +67,6 @@ class IndexMapping
 
         return permutation
 
-    ###
-
-
-    // even permutation
-    public static int evenPermutationToIndex(byte[] permutation) {
-        int index = 0
-        for (int i = 0; i < permutation.length - 2; i++) {
-            index *= permutation.length - i
-            for (int j = i + 1; j < permutation.length; j++) {
-                if (permutation[i] > permutation[j]) {
-                    index++
-                }
-            }
-        }
-
-        return index
-    }
-
-    public static byte[] indexToEvenPermutation(int index, int length) {
-        int sum = 0
-        byte[] permutation = new byte[length]
-
-        permutation[length - 1] = 1
-        permutation[length - 2] = 0
-        for (int i = length - 3; i >= 0; i--) {
-            permutation[i] = (byte) (index % (length - i))
-            sum += permutation[i]
-            index /= length - i
-            for (int j = i + 1; j < length; j++) {
-                if (permutation[j] >= permutation[i]) {
-                    permutation[j]++
-                }
-            }
-        }
-
-        if (sum % 2 != 0) {
-            byte temp = permutation[permutation.length - 1]
-            permutation[permutation.length - 1] = permutation[permutation.length - 2]
-            permutation[permutation.length - 2] = temp
-        }
-
-        return permutation
-    }
-    ###
-
     # public static int orientationToIndex(byte[] orientation, int nValues) {
     orientationToIndex: (orientation, nValues) ->
         index = 0
@@ -113,43 +75,6 @@ class IndexMapping
 
         return index
 
-    ###
-
-    public static byte[] indexToOrientation(int index, int nValues, int length) {
-        byte[] orientation = new byte[length]
-        for (int i = length - 1; i >= 0; i--) {
-            orientation[i] = (byte) (index % nValues)
-            index /= nValues
-        }
-
-        return orientation
-    }
-
-    // zero sum orientation
-    public static int zeroSumOrientationToIndex(byte[] orientation, int nValues) {
-        int index = 0
-        for (int i = 0; i < orientation.length - 1; i++) {
-            index = nValues * index + orientation[i]
-        }
-
-        return index
-    }
-
-    public static byte[] indexToZeroSumOrientation(int index, int nValues, int length) {
-        byte[] orientation = new byte[length]
-        orientation[length - 1] = 0
-        for (int i = length - 2; i >= 0; i--) {
-            orientation[i] = (byte) (index % nValues)
-            index /= nValues
-
-            orientation[length - 1] += orientation[i]
-        }
-        orientation[length - 1] = (byte) ((nValues - orientation[length - 1] % nValues) % nValues)
-
-        return orientation
-    }
-
-###
     # combinations
     # private static int nChooseK(int n, int k) {
     nChooseK: (n, k) ->
@@ -317,8 +242,24 @@ class Square1Solver
         return instance
 
 
-    initialize: ->
-        
+    initialize: (callback) ->
+
+        initializationStartTime = new Date().getTime()
+        initializationLastTime = initializationStartTime
+        statusI = 0
+
+        logStatus = (statusString) ->
+            statusI++
+            initializationCurrentTime = new Date().getTime()
+            outString = "" + statusI+ ". " + statusString + " [" + (initializationCurrentTime-initializationLastTime) + "ms split, " + (initializationCurrentTime-initializationStartTime) + "ms total]"
+            initializationLastTime = initializationCurrentTime
+
+            console.log(outString)
+            if callback?
+                callback(outString)
+
+        logStatus("Initializing Square-1 Solver.")
+
         # Phase 1
 
         @moves1 = makeArray(23)
@@ -353,6 +294,8 @@ class Square1Solver
         # for i in @moves1
         #    console.log(i.permutation.toString())
 
+        logStatus("Generating shape tables. (1/3)")
+
         # shape tables
         @shapes = new Array()
 
@@ -361,8 +304,8 @@ class Square1Solver
 
         @evenShapeDistance[State::id.getShapeIndex()] = 0
 
-        console.log("Identity: " + State::id.permutation)
-        console.log("Identity Shape: " + State::id.getShapeIndex())
+        #console.log("Identity: " + State::id.permutation)
+        #console.log("Identity Shape: " + State::id.getShapeIndex())
 
         fringe = new Array()
         fringe.push(State::id)
@@ -402,8 +345,9 @@ class Square1Solver
 
             fringe = newFringe
             depth++
+            if (depth == 10 || depth == 12 || depth == 15)
+                logStatus("Shape Table Depth: " + depth + "/20")
 
-        console.log("Too" + @shapes[0].getPiecesPermutation())
 
         #console.log(@oddShapeDistance)
 
@@ -426,9 +370,12 @@ class Square1Solver
             moveTwistBottom,
         ]
 
-        
+        logStatus("Generating move tables. (2/3)")
 
         # move tables
+
+
+        logStatus("Corner permutation move table...")
         @cornersPermutationMove = make2DArray(@N_CORNERS_PERMUTATIONS, @moves2.length)
 
         for i in [0..(@N_CORNERS_PERMUTATIONS-1)]
@@ -439,6 +386,7 @@ class Square1Solver
                 #logFirst100("ST: " + JSON.stringify(state.multiply(@moves2[j])) + ", " + @cornersPermutationMove[i][j])
 
 
+        logStatus("Corner combination move table...")
         @cornersCombinationMove = make2DArray(@N_CORNERS_COMBINATIONS, @moves2.length)
 
         for i in [0..(@N_CORNERS_COMBINATIONS-1)]
@@ -464,6 +412,7 @@ class Square1Solver
 
                 @cornersCombinationMove[i][j] = IndexMapping::combinationToIndex(isTopCorner, 4)
 
+        logStatus("Edges permutation move table...")
         @edgesPermutationMove = make2DArray(@N_EDGES_PERMUTATIONS, @moves2.length)
 
         for i in [0..(@N_EDGES_PERMUTATIONS-1)]
@@ -473,7 +422,7 @@ class Square1Solver
                 @edgesPermutationMove[i][j] = IndexMapping::permutationToIndex(state.multiply(@moves2[j]).edgesPermutation)
 
 
-
+        logStatus("Edges combination move table...")
         @edgesCombinationMove = make2DArray(@N_EDGES_COMBINATIONS, @moves2.length)
 
         for i in [0..(@N_EDGES_COMBINATIONS-1)]
@@ -499,8 +448,10 @@ class Square1Solver
 
                 @edgesCombinationMove[i][j] = IndexMapping::combinationToIndex(isTopEdge, 4)
 
+        logStatus("Generating prune tables. (3/3)")
 
         # prune tables
+        logStatus("Corners distance prune table...")
         @cornersDistance = make2DArray(@N_CORNERS_PERMUTATIONS, @N_EDGES_COMBINATIONS)
         for i in [0..(@N_CORNERS_PERMUTATIONS-1)]
             for j in [0..(@N_EDGES_COMBINATIONS-1)]
@@ -526,6 +477,7 @@ class Square1Solver
                 break
 
 
+        logStatus("Edges distance prune table...")
         @edgesDistance = make2DArray(@N_EDGES_PERMUTATIONS, @N_CORNERS_COMBINATIONS)
         for i in [0..(@N_EDGES_PERMUTATIONS-1)]
             for j in [0..(@N_CORNERS_COMBINATIONS-1)]
@@ -552,6 +504,8 @@ class Square1Solver
                 break
 
         #console.log(@oddShapeDistance)
+
+        logStatus("Done initializing Square-1 Solver.")
 
         @initialized = true
 
@@ -625,7 +579,7 @@ class Square1Solver
 
     solution: (state) ->
 
-        console.log(state.getPiecesPermutation())
+        # console.log(state.getPiecesPermutation())
 
         if (!@initialized)
             @initialize()
@@ -639,7 +593,7 @@ class Square1Solver
             solution1 = new Array()
             solution2 = new Array()
             if (@search(state, isEvenPermutation(state.getPiecesPermutation()), depth, solution1, solution2))
-                console.log("555")
+                #console.log("555")
                 sequence = new Array()
                 for moveIndex in solution1
                     sequence.push(moveIndex)
@@ -801,6 +755,7 @@ isEvenPermutation = (permutation) ->
 
     return nInversions % 2 == 0
 
+###
 b = State::id
 console.log("Identity is twistable: " + b.isTwistable())
 #console.log(b.toCubeState())
@@ -811,16 +766,4 @@ f.initialize()
 console.log("Initialized " + f.shapes.length + " shapes.")
 rs = f.getRandomState()
 #console.log(rs)
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
-document.write(f.generate(rs).join(""))
+###
