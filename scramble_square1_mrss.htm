@@ -216,8 +216,6 @@ var ty = ["c","c","c","c","c","c","c","c","e","e","e","e","e","e","e","e"];
 //var col = ["rb","b","bo","o","og","g","gr","r","r","rg","g","go","o","ob","b","br"];
 var col = ["12","24","45","51","21","42","54","15","2","4","5","1","2","4","5","1"]
 
-sq = new Square1Solver();
-
 function cb(str) {
 	if (useAlerts) {
 		alert(str);
@@ -227,16 +225,31 @@ function cb(str) {
 	}
 }
 
-sq.initialize(cb);
+square1Solver_initialize(cb);
+
+// From sq1.js
+initializationStartTime = new Date().getTime();
+initializationLastTime = initializationStartTime;
+statusI = 0;
+
+logStatus = function(statusString) {
+    var initializationCurrentTime, outString;
+    statusI++;
+    initializationCurrentTime = new Date().getTime();
+    outString = "" + statusI + ". " + statusString + " [" + (initializationCurrentTime - initializationLastTime) + "ms split, " + (initializationCurrentTime - initializationStartTime) + "ms total]";
+    initializationLastTime = initializationCurrentTime;
+    console.log(outString);
+      cb(outString);
+  };
+
+logStatus("Generating " + numcub + " scrambles.");
 
 for(var i=0; i<numcub; i++){
 
-	cb("Generating scramble #" + (i+1) + ".");
 
-	state = sq.getRandomState();
-	posit2 = state.permutation;
+	state = square1SolverGetRandomState();
 
-	scrambleString = sq.generate(state).join("");
+	scrambleString = square1SolverGenerate(state).join("");
 
 	// // (4, -3)/(-1, 2)/(0, -3)/(4, 1)/(-1, 2)/(-2, 1)/(-1, 2)/(0, 4)/(-3, 0)/(-2, 5)/(0, 2)/(0, -2)/(0, 4)
 	// posit2 = [7, 15, 1, 8, 5, 14, 9, 4, 3, 10, 11, 12, 0, 2, 6, 13]
@@ -250,7 +263,7 @@ for(var i=0; i<numcub; i++){
 	var posit = new Array();
 	map = [8,9,10, 11,0,1, 2,3,4, 5,6,7, 13,12,23, 22,21,20, 19,18,17, 16,15,14];
 	for (j in map) {
-		posit.push(posit2[map[j]]);
+		posit.push(state[map[j]]);
 	}
 
 	var top_side=remove_duplicates(posit.slice(0,12));
@@ -279,6 +292,9 @@ for(var i=0; i<numcub; i++){
 	table.innerHTML += ( "<tr><td><font face='Arial' size=3><b>&nbsp;&nbsp;" + i + ". " + scrambleString + "<\/b><\/font><\/td><td>"
 		+ "<div style='position:relative;height:100px;width:200px;text' id='scramble" + i + "'>" + url + "<\/td><\/tr>");
 	drawSq(stickers, a, "scramble" + i);
+
+	logStatus("Generated scramble #" + (i+1) + ".");
+
 }
 };
 //-->
