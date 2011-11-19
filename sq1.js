@@ -8,8 +8,6 @@ Ported by Lucas Garron, November 16, 2011.
 TODO:
 - Try to ini using pregenerated JSON.
 - Try to optimize array (byte arrays?).
-- Mersenne Twister for PRNG
-- Figure out middle slice stuff.
 
 */
 /*
@@ -47,7 +45,7 @@ make2DArray = function(lenOuter, lenInner) {
 IndexMappingPermutationToIndex = function(permutation) {
   var i, index, j;
   index = 0;
-  if (permutation.length === 0) {
+  if (permutation.length == 0) {
     return index;
   }
   for(i = 0; i < permutation.length - 1; i++) {
@@ -246,7 +244,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
   
     logStatus("Initializing Square-1 Solver.");
     
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     move10 = [11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
     move = move10;
@@ -264,7 +262,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     square1Solver_moves1[22] = moveTwist;
 
     logStatus("Generating shape tables.");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1Solver_evenShapeDistance[stateGetShapeIndex(idState)] = 0;
     fringe = new Array();
@@ -279,7 +277,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
           square1Solver_shapes.push(state);
         }
         for(i = 0; i < square1Solver_moves1.length; i++) {
-          if (!(i === 22 && !stateIsTwistable(state))) {
+          if (!(i == 22 && !stateIsTwistable(state))) {
             next = stateMultiply(state, square1Solver_moves1[i]);
             distanceTable = null;
             if (isEvenPermutation(stateGetPiecesPermutation(next))) {
@@ -296,7 +294,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
       }
       fringe = newFringe;
       depth++;
-      if (depth === 10 || depth === 12 || depth === 15) {
+      if (depth == 10 || depth == 12 || depth == 15) {
         logStatus("Shape Table Depth: " + depth + "/20");
       }
     }
@@ -308,10 +306,10 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
 
 
     logStatus("Generating move tables.");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     logStatus("Corner permutation move table...");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1Solver_cornersPermutationMove = make2DArray(square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_moves2.length);
     for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS; i++) {
@@ -322,7 +320,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     }
     
     logStatus("Corner combination move table...");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1Solver_cornersCombinationMove = make2DArray(square1Solver_N_CORNERS_COMBINATIONS, square1Solver_moves2.length);
     for(i = 0; i < square1Solver_N_CORNERS_COMBINATIONS; i++) {
@@ -349,7 +347,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     }
 
     logStatus("Edges permutation move table...");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1Solver_edgesPermutationMove = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_moves2.length);
     for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS; i++) {
@@ -360,7 +358,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     }
 
     logStatus("Edges combination move table...");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1Solver_edgesCombinationMove = make2DArray(square1Solver_N_EDGES_COMBINATIONS, square1Solver_moves2.length);
     for(i = 0; i < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; i++) {
@@ -387,10 +385,10 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     }
 
     logStatus("Generating prune tables.");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     logStatus("Corners distance prune table...");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1Solver_cornersDistance = make2DArray(square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_N_EDGES_COMBINATIONS);
     for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS - 1 + 1; i++) {
@@ -403,7 +401,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
       nVisited = 0;
       for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS - 1 + 1; i++) {
         for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; j++) {
-          if (square1Solver_cornersDistance[i][j] === depth) {
+          if (square1Solver_cornersDistance[i][j] == depth) {
             for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
               nextCornerPermutation = square1Solver_cornersPermutationMove[i][k];
               nextEdgeCombination = square1Solver_edgesCombinationMove[j][k];
@@ -423,7 +421,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     }
 
     logStatus("Edges distance prune table...");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1Solver_edgesDistance = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_N_CORNERS_COMBINATIONS);
     for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS - 1 + 1; i++) {
@@ -438,7 +436,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
       nVisited = 0;
       for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS - 1 + 1; i++) {
         for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS - 1 + 1; j++) {
-          if (square1Solver_edgesDistance[i][j] === depth) {
+          if (square1Solver_edgesDistance[i][j] == depth) {
             for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
               nextEdgesPermutation = square1Solver_edgesPermutationMove[i][k];
               nextCornersCombination = square1Solver_cornersCombinationMove[j][k];
@@ -457,7 +455,7 @@ square1Solver_initialize = function(doneCallback, statusCallback) {
     }
       
     logStatus("Done initializing Square-1 Solver.");
-    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);};iniParts[ini++] = function() {
+    /* Callback Continuation */ setTimeout(iniParts[ini++], 0);}; iniParts[ini++] = function() {
 
     square1SolverInitialized = true;
     if (doneCallback != null) {
@@ -587,8 +585,8 @@ square1SolverSolution = function(state) {
 
 square1SolverSearch = function(state, stateIsEvenPermutation, depth, solution1, solution2) {
   var distance, i, m, next, sequence2, _i, _len;
-  if (depth === 0) {
-    if (stateIsEvenPermutation && (stateGetShapeIndex(state) === stateGetShapeIndex(idState))) {
+  if (depth == 0) {
+    if (stateIsEvenPermutation && (stateGetShapeIndex(state) == stateGetShapeIndex(idState))) {
       sequence2 = square1SolverSolution2(stateToCubeState(state), 17);
       if (sequence2 !== null) {
         for (_i = 0, _len = sequence2.length; _i < _len; _i++) {
@@ -608,7 +606,7 @@ square1SolverSearch = function(state, stateIsEvenPermutation, depth, solution1, 
   }
   if (distance <= depth) {
     for(i = 0; i < square1Solver_moves1.length; i++) {
-      if (!(i === 22 && !stateIsTwistable(state))) {
+      if (!(i == 22 && !stateIsTwistable(state))) {
         next = stateMultiply(state, square1Solver_moves1[i]);
         solution1.push(i);
         if (square1SolverSearch(next, isEvenPermutation(stateGetPiecesPermutation(next)), depth - 1, solution1, solution2)) {
@@ -647,12 +645,12 @@ square1SolverSolution2 = function(state, maxDepth) {
 square1SolverSearch2 = function(cornersPermutation, cornersCombination, edgesPermutation, edgesCombination, depth, solution) {
   var i;
   ss2++;
-  if (depth === 0) {
-    return (cornersPermutation === 0) && (edgesPermutation === 0);
+  if (depth == 0) {
+    return (cornersPermutation == 0) && (edgesPermutation == 0);
   }
   if ((square1Solver_cornersDistance[cornersPermutation][edgesCombination] <= depth) && (square1Solver_edgesDistance[edgesPermutation][cornersCombination] <= depth)) {
     for(i = 0; i < square1Solver_moves2.length; i++) {
-      if (!((solution.length - depth - 1 >= 0) && (Math.floor(solution[solution.length - depth - 1] / 3) === Math.floor(i / 3)))) {
+      if (!((solution.length - depth - 1 >= 0) && (Math.floor(solution[solution.length - depth - 1] / 3) == Math.floor(i / 3)))) {
         solution[solution.length - depth] = i;
         if (square1SolverSearch2(square1Solver_cornersPermutationMove[cornersPermutation][i], square1Solver_cornersCombinationMove[cornersCombination][i], square1Solver_edgesPermutationMove[edgesPermutation][i], square1Solver_edgesCombinationMove[edgesCombination][i], depth - 1, solution)) {
           return true;
@@ -703,8 +701,16 @@ isEvenPermutation = function(permutation) {
       }
     }
   }
-  return nInversions % 2 === 0;
+  return nInversions % 2 == 0;
 };
+
+/*
+function bx() {
+fs = require('fs')
+fs.writeFile('noo.txt', JSON.stringify(square1Solver_shapes));
+}
+square1Solver_initialize(bx);
+*/
 
 /*
 b = idState;

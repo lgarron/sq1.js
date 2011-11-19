@@ -9,8 +9,17 @@
 
 /* This scrambler builds on the work of Jaap Scherphuis, Andrew Nelson, Michael Gottlieb, Waltter Souza, and Lucas Garron. Some parts of it haven't cleaned up in a while, but it works. */
 
-mt = new MersenneTwisterObject(new Date() + Math.random());
-setRandomSource(mt);
+var seed1 = new Date().getTime() + (Math.random()*0xffffffff);
+var seed2 = new Date().getTime() + (Math.random()*0xffffffff);
+// Make sure that the seed calculation is not deterministic due to implementation details.
+if (seed1 != seed2) {
+	console.log("Seeding Mersenne Twister.");
+	var mt = new MersenneTwisterObject(seed1);
+	setRandomSource(mt);
+}
+else {
+	console.log("WARNING: Seeding Mersenne Twister did not work. Falling back to Math.random().");
+}
 
 // Legacy argument parsing, which still works.
 
@@ -183,7 +192,7 @@ li {
 }
 </style>
 </head> 
-<body bgcolor="white" onload="goButton.focus();"> 
+<body bgcolor="white" onload="document.getElementById('goButton').focus();"> 
 
 <div id="status" style="padding: 1em; margin: 1em; font-family: Helvetica; border: 1px solid #888; border-radius: 1em; background: #CCC;">
 <center>
@@ -467,7 +476,7 @@ function scrambleRecursive(i, n) {
 	var stickers = (b.concat(c)).replace(/0/g,colorString[0]).replace(/1/g,colorString[1]).replace(/2/g,colorString[2]).replace(/3/g,colorString[3]).replace(/4/g,colorString[4]).replace(/5/g,colorString[5]);
 	var table = document.getElementById("tbd");
 	table.innerHTML += ( "<tr><td><font face='Arial' size=3><b>&nbsp;&nbsp;" + i + ". " + scrambleString + "<\/b><\/font><\/td><td><center>"
-		+ "<div style='position:relative;height:100px;width:200px;text' id='scramble" + i + "'/></center><\/td><\/tr>");
+		+ "<div style='position:relative;height:100px;width:200px;' id='scramble" + i + "'/></center><\/td><\/tr>");
 	drawSq(stickers, a, "scramble" + i);
 
 	logStatus("Generated scramble #" + (i) + ".");
