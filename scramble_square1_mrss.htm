@@ -9,16 +9,18 @@
 
 /* This scrambler builds on the work of Jaap Scherphuis, Andrew Nelson, Michael Gottlieb, Waltter Souza, and Lucas Garron. Some parts of it haven't cleaned up in a while, but it works. */
 
-var seed1 = 100;//new Date().getTime() + (Math.random()*0xffffffff);
+var seed1 = new Date().getTime() + (Math.random()*0xffffffff);
 var seed2 = new Date().getTime() + (Math.random()*0xffffffff);
-// Make sure that the seed calculation is not deterministic due to implementation details.
-if (seed1 != seed2) {
+var seed3 = new Date().getTime() + (Math.random()*0xffffffff);
+var seed4 = new Date().getTime() + (Math.random()*0xffffffff);
+// Make sure that the seed calculation is not deterministic due to implementation details (this happened with a straight adoption of QBX code, due to attempted bit masking of a float). We do this a few times to reduce the chances of a false negative.
+if (seed1 != seed2 || seed1 != seed3 || seed1 != seed4) {
 	console.log("Seeding Mersenne Twister.");
 	var mt = new MersenneTwisterObject(seed1);
 	setRandomSource(mt);
 }
 else {
-	console.log("WARNING: Seeding Mersenne Twister did not work. Falling back to Math.random().");
+	console.log("WARNING: Unable to generate a unique seed for Mersenne Twister. Falling back to Math.random().");
 }
 
 // Legacy argument parsing, which still works.
@@ -61,6 +63,7 @@ function colorGet(col) {
 	if (col=="g") return ("#00FF00");
 	if (col=="y") return ("#FFFF00");
 	if (col=="w") return ("#FFFFFF");
+	if (col=="x") return ("#000000");
 }
 
 //mathy helper functions
@@ -83,9 +86,9 @@ function drawPolygon(r, fillColor, arrx, arry) {
 	r.path(pathString).attr({fill: colorGet(fillColor), stroke: "#000"})
 }
  
-function drawSq(stickers, shapes, canvas) {
+function drawSq(stickers, middleIsSolved, shapes, canvas) {
 	var z = 1.366 // sqrt(2) / sqrt(1^2 + tan(15 degrees)^2)
-	var r = Raphael(canvas, 200, 100);
+	var r = Raphael(canvas, 200, 110);
 	
 	var arrx, arry;
  
@@ -108,7 +111,43 @@ function drawSq(stickers, shapes, canvas) {
 		angles2[foo]=(19-foo*2)/12*Math.PI;
 		shapes = shapes.concat("xxxxxxxxxxxxxxxx");
 	}
- 
+	
+	var h = sin1(1)*w*z - sin1(1)*z;
+	if (middleIsSolved) {
+		arrx=[centerx+cos1(1)*w*z, centerx+cos1(4)*w*z, centerx+cos1(7)*w*z, centerx+cos1(10)*w*z];
+		arry=[centery-sin1(1)*w*z, centery-sin1(4)*w*z, centery-sin1(7)*w*z, centery-sin1(10)*w*z];
+		drawPolygon(r, "x", arrx, arry);
+		
+		centery += 10;
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(1)*w*z, centerx+cos1(1)*w*z];
+		arry=[centery-sin1(1)*w*z, centery-sin1(1)*z, centery-sin1(1)*z, centery-sin1(1)*w*z, centery-sin1(1)*w*z];
+		drawPolygon(r, colorString[5], arrx, arry)
+
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(10)*w*z, centerx+cos1(10)*w*z];
+		arry=[centery-sin1(1)*w*z, centery-sin1(1)*z, centery-sin1(1)*z, centery-sin1(1)*w*z, centery-sin1(1)*w*z];
+		drawPolygon(r, colorString[5], arrx, arry)
+		centery -= 10;
+	}
+	else {
+		arrx=[centerx+cos1(1)*w*z, centerx+cos1(4)*w*z, centerx+cos1(6)*w, centerx+cos1(9)*w*z, centerx+cos1(11)*w*z, centerx+cos1(0)*w];
+		arry=[centery-sin1(1)*w*z, centery-sin1(4)*w*z, centery-sin1(6)*w, centery+sin1(9)*w*z, centery-sin1(11)*w*z, centery-sin1(0)*w];
+		drawPolygon(r, "x", arrx, arry);
+
+		arrx=[centerx+cos1(9)*w*z, centerx+cos1(11)*w*z, centerx+cos1(11)*w*z, centerx+cos1(9)*w*z];
+		arry=[centery+sin1(9)*w*z-h, centery-sin1(11)*w*z-h, centery-sin1(11)*w*z, centery+sin1(9)*w*z];
+		drawPolygon(r, colorString[4], arrx, arry);
+
+		centery += 10;
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(1)*w*z, centerx+cos1(1)*w*z];
+		arry=[centery-sin1(1)*w*z, centery-sin1(1)*z, centery-sin1(1)*z, centery-sin1(1)*w*z];
+		drawPolygon(r, colorString[5], arrx, arry)
+
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(11)*w*z, centerx+cos1(11)*w*z];
+		arry=[centery-sin1(1)*w*z, centery-sin1(1)*z, centery-sin1(11)*w*z + h, centery-sin1(11)*w*z];
+		drawPolygon(r, colorString[2], arrx, arry)
+		centery -= 10;
+	}
+	 
 	//fill and outline first layer
 	var shapecounter = 0;
 	for(foo=0; shapecounter<12; foo++){
@@ -144,6 +183,45 @@ function drawSq(stickers, shapes, canvas) {
  
 	//fill and outline second layer
 	centerx += 100;  
+	centery += 10;
+
+
+	var h = sin1(1)*w*z - sin1(1)*z;
+	if (middleIsSolved) {
+		arrx=[centerx+cos1(1)*w*z, centerx+cos1(4)*w*z, centerx+cos1(7)*w*z, centerx+cos1(10)*w*z];
+		arry=[centery+sin1(1)*w*z, centery+sin1(4)*w*z, centery+sin1(7)*w*z, centery+sin1(10)*w*z];
+		drawPolygon(r, "x", arrx, arry);
+		
+		centery -= 10;
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(1)*w*z, centerx+cos1(1)*w*z];
+		arry=[centery+sin1(1)*w*z, centery+sin1(1)*z, centery+sin1(1)*z, centery+sin1(1)*w*z, centery+sin1(1)*w*z];
+		drawPolygon(r, colorString[5], arrx, arry)
+
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(10)*w*z, centerx+cos1(10)*w*z];
+		arry=[centery+sin1(1)*w*z, centery+sin1(1)*z, centery+sin1(1)*z, centery+sin1(1)*w*z, centery+sin1(1)*w*z];
+		drawPolygon(r, colorString[5], arrx, arry)
+		centery += 10;
+	}
+	else {
+		arrx=[centerx+cos1(1)*w*z, centerx+cos1(4)*w*z, centerx+cos1(6)*w, centerx+cos1(9)*w*z, centerx+cos1(11)*w*z, centerx+cos1(0)*w];
+		arry=[centery+sin1(1)*w*z, centery+sin1(4)*w*z, centery+sin1(6)*w, centery-sin1(9)*w*z, centery+sin1(11)*w*z, centery+sin1(0)*w];
+		drawPolygon(r, "x", arrx, arry);
+
+		arrx=[centerx+cos1(9)*w*z, centerx+cos1(11)*w*z, centerx+cos1(11)*w*z, centerx+cos1(9)*w*z];
+		arry=[centery-sin1(9)*w*z+h, centery+sin1(11)*w*z+h, centery+sin1(11)*w*z, centery-sin1(9)*w*z];
+		drawPolygon(r, colorString[4], arrx, arry);
+
+		centery -= 10;
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(1)*w*z, centerx+cos1(1)*w*z];
+		arry=[centery+sin1(1)*w*z, centery+sin1(1)*z, centery+sin1(1)*z, centery+sin1(1)*w*z];
+		drawPolygon(r, colorString[5], arrx, arry)
+
+		arrx=[centerx+cos1(0)*w, centerx+cos1(0)*w, centerx+cos1(11)*w*z, centerx+cos1(11)*w*z];
+		arry=[centery+sin1(1)*w*z, centery+sin1(1)*z, centery+sin1(11)*w*z - h, centery+sin1(11)*w*z];
+		drawPolygon(r, colorString[2], arrx, arry)
+		centery += 10;
+	}
+
 	shapecounter = 0;
 	for(shapecounter=0; shapecounter<12; foo++){
 		if (shapes.length<=foo) shapecounter = 12;
@@ -176,6 +254,7 @@ function drawSq(stickers, shapes, canvas) {
 		 	shapecounter +=1;
 		}
 	}
+
  
 }
 </script> 
@@ -241,6 +320,7 @@ function randomTurnScramble(){
     ls=-1;
     var seq=[];
     f=0;
+    var middleIsSolved = true;
     for(i=0; i<seqlen; i++){
         do{
             if(ls==0){
@@ -258,12 +338,17 @@ function randomTurnScramble(){
         if(j>0) ls=1;
         else if(j<0) ls=2;
         else { ls=0; f++; }
+        if (j == 0) {
+        	console.log("Twist.");
+        	middleIsSolved = !middleIsSolved;
+        }
         seq[i]=j;
     }
-	return {"position": posit, "scrambleString": scramblestring(seq)};
+	return {"position": posit, "scrambleString": scramblestring(seq), "middleIsSolved": middleIsSolved};
 }
  
 function scramblestring(seq){
+	console.log(seq);
     var s="",i,k,l=-1;
     for(i=0; i<seq.length; i++){
         k=seq[i];
@@ -405,7 +490,7 @@ logStatus = function(statusString) {
     outString = statusString + " [" + (initializationCurrentTime - initializationLastTime) + "ms split, " + (initializationCurrentTime - initializationStartTime) + "ms total]";
     initializationLastTime = initializationCurrentTime;
     console.log(outString);
-      cb(outString);
+    cb(outString);
   };
 
 if (scrambleStyle == "mrss") {
@@ -420,18 +505,19 @@ logStatus("Generating " + numcub + " scrambles.");
 function scrambleRecursive(i, n) {
 
 	var posit;
+	var middleIsSolved;
 	var scrambleString;
 	var tb, ty, col, eido;
 
 	if (scrambleStyle == "mrss") {
 		var position = square1SolverGetRandomPosition();
 		var state = position["permutation"];
-		console.log(position["middleIsSolved"]);
+		middleIsSolved = position["middleIsSolved"];
 		console.log(state);
 		scrambleString = square1SolverGenerate(position).join("");
 		
 		posit = [];
-		map = [8,9,10, 11,0,1, 2,3,4, 5,6,7, 13,12,23, 22,21,20, 19,18,17, 16,15,14];
+		map = [8,9,10, 11,0,1, 2,3,4, 5,6,7, 19,18,17, 16,15,14, 13,12,23, 22,21,20];
 		for (j in map) {
 			posit.push(state[map[j]]);
 		}
@@ -447,6 +533,7 @@ function scrambleRecursive(i, n) {
 	else if (scrambleStyle == "old") {
 		var scr = randomTurnScramble();
 		var posit = scr["position"];
+		middleIsSolved = scr["middleIsSolved"];
 
 		scrambleString = scr["scrambleString"];
 
@@ -479,8 +566,8 @@ function scrambleRecursive(i, n) {
 	var stickers = (b.concat(c)).replace(/0/g,colorString[0]).replace(/1/g,colorString[1]).replace(/2/g,colorString[2]).replace(/3/g,colorString[3]).replace(/4/g,colorString[4]).replace(/5/g,colorString[5]);
 	var table = document.getElementById("tbd");
 	table.innerHTML += ( "<tr><td><font face='Arial' size=3><b>&nbsp;&nbsp;" + i + ". " + scrambleString + "<\/b><\/font><\/td><td><center>"
-		+ "<div style='position:relative;height:100px;width:200px;' id='scramble" + i + "'/></center><\/td><\/tr>");
-	drawSq(stickers, a, "scramble" + i);
+		+ "<div style='position:relative;height:110px;width:200px;' id='scramble" + i + "'/></center><\/td><\/tr>");
+	drawSq(stickers, middleIsSolved, a, "scramble" + i);
 
 	logStatus("Generated scramble #" + (i) + ".");
 	

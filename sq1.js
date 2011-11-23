@@ -15,6 +15,8 @@ TODO:
 
 var IndexMappingCombinationToIndex, IndexMappingIndexToCombination, IndexMappingIndexToPermutation, IndexMappingNChooseK, IndexMappingOrientationToIndex, IndexMappingPermutationToIndex, b, cubeStateMultiply, i, idState, isEvenPermutation, make2DArray, makeArray, makeArrayZeroed, numStates, randomIntBelow, rs, square1SolverGenerate, square1SolverInitialized, square1SolverSearch, square1SolverSearch2, square1SolverSolution, square1SolverSolution2, square1SolverSolve, square1Solver_N_CORNERS_COMBINATIONS, square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_N_EDGES_COMBINATIONS, square1Solver_N_EDGES_PERMUTATIONS, square1Solver_evenShapeDistance, square1SolverInitialize, square1Solver_oddShapeDistance, square1Solver_shapes, ss1, ss2, stateGetPiecesPermutation, stateGetShapeIndex, stateIsTwistable, stateMultiply, stateToCubeState, _i, _len;
 
+var i = 0;
+
 /*
     Trick from QBX (by Evan Gates).
 */
@@ -57,6 +59,9 @@ IndexMappingPermutationToIndex = function(permutation) {
         index++;
       }
     }
+  }
+  if (index == 46436297) {
+    iiii = 4;
   }
   return index;
 };
@@ -132,7 +137,7 @@ stateIsTwistable = function(permutation) {
 stateMultiply = function(permutation, move) {
   var i, newPermutation;
   newPermutation = makeArray(24);
-  for(i = 0; i < permutation.length; i++) {
+  for(i = 0; i < 24; i++) {
     newPermutation[i] = permutation[move[i]];
   }
   return newPermutation;
@@ -141,7 +146,7 @@ stateMultiply = function(permutation, move) {
 stateGetShapeIndex = function(permutation) {
   var cuts, i, next;
   cuts = makeArray(24);
-  for(i = 0; i < cuts.length; i++) {
+  for(i = 0; i < 24; i++) {
     cuts[i] = 0;
   }
   for (i = 0; i <= 11; i++) {
@@ -182,12 +187,12 @@ stateToCubeState = function(permutation) {
   var cornerIndices, cornersPermutation, edgeIndices, edgesPermutation, i;
   cornerIndices = [0, 3, 6, 9, 12, 15, 18, 21];
   cornersPermutation = makeArray(8);
-  for(i = 0; i < cornersPermutation.length; i++) {
+  for(i = 0; i < 8; i++) {
     cornersPermutation[i] = permutation[cornerIndices[i]];
   }
   edgeIndices = [1, 4, 7, 10, 13, 16, 19, 22];
   edgesPermutation = makeArray(8);
-  for(i = 0; i < edgesPermutation.length; i++) {
+  for(i = 0; i < 8; i++) {
     edgesPermutation[i] = permutation[edgeIndices[i]] - 8;
   }
   return [cornersPermutation, edgesPermutation];
@@ -197,7 +202,7 @@ cubeStateMultiply = function(state, move) {
   var cornersPermutation, edgesPermutation, i;
   cornersPermutation = makeArray(8);
   edgesPermutation = makeArray(8);
-  for (i = 0; i <= 7; i++) {
+  for (i = 0; i < 8; i++) {
     cornersPermutation[i] = state[0][move[0][i]];
     edgesPermutation[i] = state[1][move[1][i]];
   }
@@ -339,7 +344,7 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
       corners = makeArray(8);
       nextTop = 0;
       nextBottom = 4;
-      for(j = 0; j < corners.length; j++) {
+      for(j = 0; j < 8; j++) {
         if (combination[j]) {
           corners[j] = nextTop++;
         } else {
@@ -350,7 +355,7 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
       for(j = 0; j < square1Solver_moves2.length; j++) {
         result = cubeStateMultiply(state, square1Solver_moves2[j]);
         isTopCorner = makeArray(8);
-        for(k = 0; k < isTopCorner.length; k++) {
+        for(k = 0; k < 8; k++) {
           isTopCorner[k] = result[0][k] < 4;
         }
         square1Solver_cornersCombinationMove[i][j] = IndexMappingCombinationToIndex(isTopCorner, 4);
@@ -360,11 +365,14 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
     logStatus("Edges permutation move table...");
     /* Callback Continuation */ nextIniStep();}; iniParts[ini++] = function() {
 
+    logStatus("Length: " + square1Solver_moves2.length);
+
     square1Solver_edgesPermutationMove = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_moves2.length);
     for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS; i++) {
       state = [makeArrayZeroed(8), IndexMappingIndexToPermutation(i, 8)];
       for(j = 0; j < square1Solver_moves2.length; j++) {
-        square1Solver_edgesPermutationMove[i][j] = IndexMappingPermutationToIndex(cubeStateMultiply(state, square1Solver_moves2[j])[0]);
+        square1Solver_edgesPermutationMove[i][j] = IndexMappingPermutationToIndex(cubeStateMultiply(state, square1Solver_moves2[j])[1]);
+        //console.log(":" + square1Solver_edgesPermutationMove[i][j] + ", " + state.toString() + ", " + square1Solver_moves2[j] + ", " + cubeStateMultiply(state, square1Solver_moves2[j]).toString());
       }
     }
 
@@ -372,12 +380,12 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
     /* Callback Continuation */ nextIniStep();}; iniParts[ini++] = function() {
 
     square1Solver_edgesCombinationMove = make2DArray(square1Solver_N_EDGES_COMBINATIONS, square1Solver_moves2.length);
-    for(i = 0; i < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; i++) {
+    for(i = 0; i < square1Solver_N_EDGES_COMBINATIONS; i++) {
       combination = IndexMappingIndexToCombination(i, 4, 8);
       edges = makeArray(8);
       nextTop = 0;
       nextBottom = 4;
-      for(j = 0; j < 8 - 1 + 1; j++) {
+      for(j = 0; j < 8; j++) {
         if (combination[j]) {
           edges[j] = nextTop++;
         } else {
@@ -385,10 +393,10 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
         }
       }
       state = [makeArray(8), edges];
-      for(j = 0; j < square1Solver_moves2.length - 1 + 1; j++) {
+      for(j = 0; j < square1Solver_moves2.length; j++) {
         result = cubeStateMultiply(state, square1Solver_moves2[j]);
         isTopEdge = makeArray(8);
-        for(k = 0; k < isTopEdge.length - 1 + 1; k++) {
+        for(k = 0; k < 8; k++) {
           isTopEdge[k] = result[1][k] < 4;
         }
         square1Solver_edgesCombinationMove[i][j] = IndexMappingCombinationToIndex(isTopEdge, 4);
@@ -402,18 +410,18 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
     /* Callback Continuation */ nextIniStep();}; iniParts[ini++] = function() {
 
     square1Solver_cornersDistance = make2DArray(square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_N_EDGES_COMBINATIONS);
-    for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS - 1 + 1; i++) {
-      for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; j++) {
+    for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS; i++) {
+      for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS; j++) {
         square1Solver_cornersDistance[i][j] = -1;
       }
     }
     square1Solver_cornersDistance[0][0] = 0;
     while (true) {
       nVisited = 0;
-      for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS - 1 + 1; i++) {
-        for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS - 1 + 1; j++) {
+      for(i = 0; i < square1Solver_N_CORNERS_PERMUTATIONS; i++) {
+        for(j = 0; j < square1Solver_N_EDGES_COMBINATIONS; j++) {
           if (square1Solver_cornersDistance[i][j] == depth) {
-            for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
+            for(k = 0; k < square1Solver_moves2.length; k++) {
               nextCornerPermutation = square1Solver_cornersPermutationMove[i][k];
               nextEdgeCombination = square1Solver_edgesCombinationMove[j][k];
               if (square1Solver_cornersDistance[nextCornerPermutation][nextEdgeCombination] < 0) {
@@ -435,8 +443,8 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
     /* Callback Continuation */ nextIniStep();}; iniParts[ini++] = function() {
 
     square1Solver_edgesDistance = make2DArray(square1Solver_N_EDGES_PERMUTATIONS, square1Solver_N_CORNERS_COMBINATIONS);
-    for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS - 1 + 1; i++) {
-      for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS - 1 + 1; j++) {
+    for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS; i++) {
+      for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS; j++) {
         square1Solver_edgesDistance[i][j] = -1;
       }
     }
@@ -445,10 +453,10 @@ square1SolverInitialize = function(useTimeouts, doneCallback, statusCallback) {
     depth = 0;
     while (true) {
       nVisited = 0;
-      for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS - 1 + 1; i++) {
-        for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS - 1 + 1; j++) {
+      for(i = 0; i < square1Solver_N_EDGES_PERMUTATIONS; i++) {
+        for(j = 0; j < square1Solver_N_CORNERS_COMBINATIONS; j++) {
           if (square1Solver_edgesDistance[i][j] == depth) {
-            for(k = 0; k < square1Solver_moves2.length - 1 + 1; k++) {
+            for(k = 0; k < square1Solver_moves2.length; k++) {
               nextEdgesPermutation = square1Solver_edgesPermutationMove[i][k];
               nextCornersCombination = square1Solver_cornersCombinationMove[j][k];
               if (square1Solver_edgesDistance[nextEdgesPermutation][nextCornersCombination] < 0) {
@@ -533,11 +541,12 @@ square1SolverNormalizeSolution = function(solution) {
   return newSolution;
 };
 
-square1SolverSolutionEnsureMiddleParity = function(solution, middleIsTwisted) {
+square1SolverSolutionEnsureMiddleParity = function(solution, middleIsSolved) {
   var simplifiedSolution = square1SolverNormalizeSolution(solution);
   var location60 = -1;
   var locationM0 = -1;
   var locationMN = -1;
+  //console.log(square1SolverSolutionToString(solution).join(""));
   for (i = 0; i < simplifiedSolution.length - 2; i+=3) {
     if (!((0 <= simplifiedSolution[i] < 11 || simplifiedSolution[i] == -1) && (11 <= simplifiedSolution[i+2] < 22 || simplifiedSolution[i+2] == -1) && (simplifiedSolution[i+2] == 22))) {
       console.error("Improperly simplified (see indices " + i + " to " + (i+2) + "):" + simplifiedSolution); // Sanity check.
@@ -557,8 +566,8 @@ square1SolverSolutionEnsureMiddleParity = function(solution, middleIsTwisted) {
   }
 
   // After sanity checks:
-  if (((simplifiedSolution.length - 2)/3 % 2 == 0) == middleIsTwisted) {
-    console.log("Middle parity is correct.");
+  if (((simplifiedSolution.length - 2)/3 % 2 == 0) == middleIsSolved) {
+    //console.log("Middle parity is correct.");
     return solution;
   }
 
@@ -570,9 +579,10 @@ square1SolverSolutionEnsureMiddleParity = function(solution, middleIsTwisted) {
     location = locationMN;
   }
 
-  console.log("Reversing middle parity at location " + i + ".");
+  //console.log("Reversing middle parity at location " + i + ".");
   simplifiedSolution.splice(location+2, 1, 5,22,5,22,5);
   simplifiedSolution = square1SolverNormalizeSolution(simplifiedSolution);
+  //console.log(square1SolverSolutionToString(simplifiedSolution).join(""));
   return simplifiedSolution;
 };
 
@@ -583,6 +593,9 @@ square1SolverSolutionToString = function (solution) {
   bottom = 0;
   for (i = 0; i < solution.length; i++) {
     moveIndex = solution[i];
+    if (moveIndex == -1){
+      // Nothing.
+    }
     if (moveIndex < 11) {
       top += moveIndex + 1;
       top %= 12;
@@ -618,12 +631,30 @@ square1SolverSolutionToString = function (solution) {
 
 square1SolverSolve = function(position) {
   var solution = square1SolverSolution(position);
-  return square1SolverSolutionToString(solution.reverse());
+  return square1SolverSolutionToString(solution);
 };
 
 square1SolverGenerate = function(position) {
   var solution = square1SolverSolution(position);
-  return square1SolverSolutionToString(solution.reverse());
+  //console.log("FF: "+ solution);
+  var newSolution = [];
+  for (i = solution.length-1; i >= 0; i--) {
+    move = solution[i];
+    if (move < 0) {
+      newSolution.push(-1);
+    }
+    else if (move < 11) {
+      newSolution.push(10-move);
+    }
+    else if (move < 22) {
+      newSolution.push(32-move);
+    }
+    else {
+      newSolution.push(move);
+    }
+  }
+  //console.log("FF2: "+ newSolution);
+  return square1SolverSolutionToString(newSolution);
 };
 
 square1SolverSolution = function(position) {
@@ -636,8 +667,12 @@ square1SolverSolution = function(position) {
   while (true) {
     solution1 = new Array();
     solution2 = new Array();
-    if (square1SolverSearch(position["permutation"], position["middleIsSolved"], isEvenPermutation(stateGetPiecesPermutation(position["permutation"])), depth, solution1, solution2)) {
+    if (square1SolverSearch(position["permutation"], isEvenPermutation(stateGetPiecesPermutation(position["permutation"])), depth, solution1, solution2)) {
       sequence = new Array();
+
+      //console.log("L1: " + solution1.length);
+      //console.log("L2: " + solution2.length);
+
       for (_i = 0, _len = solution1.length; _i < _len; _i++) {
         moveIndex = solution1[_i];
         sequence.push(moveIndex);
@@ -651,22 +686,23 @@ square1SolverSolution = function(position) {
           sequence.push(phase1MoveIndex);
         }
       }
+      //console.log("TT1: " + square1SolverSolutionToString(sequence).join(""));
+      //console.log("TT1a: " + sequence);
+      sequence = square1SolverSolutionEnsureMiddleParity(sequence, position["middleIsSolved"]);
+      //console.log("TT2: " + square1SolverSolutionToString(sequence).join(""));
+      //console.log("TT2a: " + sequence);
       return sequence;
     }
     depth++;
-    if (depth > 300) {
-      return 4 / 0;
-    }
   }
-  _results = square1SolverSolutionEnsureMiddleParity(_results, position["middleIsSolved"]);
   return _results;
 };
 
-square1SolverSearch = function(state, middleIsSolved, stateIsEvenPermutation, depth, solution1, solution2) {
+square1SolverSearch = function(state, stateIsEvenPermutation, depth, solution1, solution2) {
   var distance, i, m, next, sequence2, _i, _len;
   if (depth == 0) {
     if (stateIsEvenPermutation && (stateGetShapeIndex(state) == stateGetShapeIndex(idState))) {
-      sequence2 = square1SolverSolution2(stateToCubeState(state), middleIsSolved, 17);
+      sequence2 = square1SolverSolution2(stateToCubeState(state), 17);
       if (sequence2 !== null) {
         for (_i = 0, _len = sequence2.length; _i < _len; _i++) {
           m = sequence2[_i];
@@ -688,8 +724,7 @@ square1SolverSearch = function(state, middleIsSolved, stateIsEvenPermutation, de
       if (!(i == 22 && !stateIsTwistable(state))) {
         next = stateMultiply(state, square1Solver_moves1[i]);
         solution1.push(i);
-        var middleIsSolvedNew = (i == 22) ? !middleIsSolved : middleIsSolved; // Avoid issues with using ^ (which is bitwise xor, not logical xor).
-        if (square1SolverSearch(next, middleIsSolvedNew, isEvenPermutation(stateGetPiecesPermutation(next)), depth - 1, solution1, solution2)) {
+        if (square1SolverSearch(next, isEvenPermutation(stateGetPiecesPermutation(next)), depth - 1, solution1, solution2)) {
           return true;
         }
         solution1.length -= 1;
@@ -699,46 +734,46 @@ square1SolverSearch = function(state, middleIsSolved, stateIsEvenPermutation, de
   return false;
 };
 
-square1SolverSolution2 = function(state, middleIsSolved, maxDepth) {
+square1SolverSolution2 = function(state, maxDepth) {
   var cornersCombination, cornersPermutation, depth, edgesCombination, edgesPermutation, isTopCorner, isTopEdge, k, solution;
   cornersPermutation = IndexMappingPermutationToIndex(state[0]);
   isTopCorner = makeArray(8);
-  for(k = 0; k < isTopCorner.length; k++) {
+  for(k = 0; k < 8; k++) {
     isTopCorner[k] = state[0][k] < 4;
   }
   cornersCombination = IndexMappingCombinationToIndex(isTopCorner, 4);
   edgesPermutation = IndexMappingPermutationToIndex(state[1]);
   isTopEdge = makeArray(8);
-  for(k = 0; k < isTopEdge.length; k++) {
+  for(k = 0; k < 8; k++) {
     isTopEdge[k] = state[1][k] < 4;
   }
   edgesCombination = IndexMappingCombinationToIndex(isTopEdge, 4);
   for(depth = 0; depth < maxDepth + 1; depth++) {
     solution = makeArrayZeroed(depth);
-    if (square1SolverSearch2(cornersPermutation, cornersCombination, edgesPermutation, edgesCombination, middleIsSolved, depth, solution)) {
+    //console.log("Oink: " + cornersPermutation + ", " + cornersCombination + ", " + edgesPermutation + ", " + edgesCombination + ", " + depth + ", " + solution.toString());
+    if (square1SolverSearch2(cornersPermutation, cornersCombination, edgesPermutation, edgesCombination, depth, solution)) {      
       return solution;
     }
   }
   return null;
 };
 
-square1SolverSearch2 = function(cornersPermutation, cornersCombination, edgesPermutation, edgesCombination, middleIsSolved, depth, solution) {
+square1SolverSearch2 = function(cornersPermutation, cornersCombination, edgesPermutation, edgesCombination, depth, solution) {
+  //var input = "Search 2 ini: " + cornersPermutation + ", " + cornersCombination + ", " + edgesPermutation + ", " + edgesCombination + ", " + depth + ", " + solution.toString();
+
   var i;
   ss2++;
   if (depth == 0) {
-    if (!middleIsSolved && (cornersPermutation == 0) && (edgesPermutation == 0)) {
-      console.log("Almost");
-    }
     return (cornersPermutation == 0) && (edgesPermutation == 0);
   }
   if ((square1Solver_cornersDistance[cornersPermutation][edgesCombination] <= depth) && (square1Solver_edgesDistance[edgesPermutation][cornersCombination] <= depth)) {
-    var startIndex = (depth == 1 && !middleIsSolved) ? 22 : 0;
-    startIndex = 0;
-    for(i = startIndex; i < square1Solver_moves2.length; i++) {
+    for(i = 0; i < square1Solver_moves2.length; i++) {
       if (!((solution.length - depth - 1 >= 0) && (Math.floor(solution[solution.length - depth - 1] / 3) == Math.floor(i / 3)))) {
         solution[solution.length - depth] = i;
-        var middleIsSolvedNew = (i == 22) ? !middleIsSolved : middleIsSolved; // Avoid issues with using ^ (which is bitwise xor, not logical xor).
-        if (square1SolverSearch2(square1Solver_cornersPermutationMove[cornersPermutation][i], square1Solver_cornersCombinationMove[cornersCombination][i], square1Solver_edgesPermutationMove[edgesPermutation][i], square1Solver_edgesCombinationMove[edgesCombination][i], middleIsSolvedNew, depth - 1, solution)) {
+        if (square1SolverSearch2(square1Solver_cornersPermutationMove[cornersPermutation][i], square1Solver_cornersCombinationMove[cornersCombination][i], square1Solver_edgesPermutationMove[edgesPermutation][i], square1Solver_edgesCombinationMove[edgesCombination][i], depth - 1, solution)) {
+          //console.log("Search 2 subfinal: " + input);
+          //console.log("Search 2 final: " + cornersPermutation + ", " + cornersCombination + ", " + edgesPermutation + ", " + edgesCombination + ", " + depth + ", " + solution.toString());
+
           return true;
         }
       }
@@ -756,7 +791,7 @@ square1SolverGetRandomPosition = function() {
   cornersPermutation = IndexMappingIndexToPermutation(randomIntBelow(square1Solver_N_CORNERS_PERMUTATIONS), 8);
   edgesPermutation = IndexMappingIndexToPermutation(randomIntBelow(square1Solver_N_EDGES_PERMUTATIONS), 8);
   permutation = makeArray(shape.length);
-  for(i = 0; i < permutation.length; i++) {
+  for(i = 0; i < shape.length; i++) {
     if (shape[i] < 8) {
       permutation[i] = cornersPermutation[shape[i]];
     } else {
@@ -790,3 +825,30 @@ isEvenPermutation = function(permutation) {
   }
   return nInversions % 2 == 0;
 };
+
+/*
+square1SolverInitialize();
+
+  var outString = "SQ1JS Values";
+
+  function print2DArray(arr) {
+    outString += "Array\n";
+    console.log("Len: " + arr.length);
+    for (var i = 0; i < arr.length; i++) {
+      outString += " L1\n";
+      for (var j = 0; j < arr[i].length; j++) {
+        outString += "  " + arr[i][j] + "\n";
+      }
+    }
+  }
+
+  print2DArray(square1Solver_cornersPermutationMove);
+  print2DArray(square1Solver_cornersCombinationMove);
+  print2DArray(square1Solver_edgesPermutationMove);
+  print2DArray(square1Solver_edgesCombinationMove);
+  print2DArray(square1Solver_cornersDistance);
+  print2DArray(square1Solver_edgesDistance);
+
+  var fs = require('fs');
+  fs.writeFileSync("sq1js.js.txt", outString, encoding='utf8');
+*/
