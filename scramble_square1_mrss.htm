@@ -4,24 +4,10 @@
 <title>Square-1 scrambler</title> 
 <script type="text/javascript" src="raphael-min.js"></script>
 <script type="text/javascript" src="sq1.js"></script>
-<script type="text/javascript" src="mersennetwister.js"></script>
+<script type="text/javascript" src="random-int.js"></script>
 <script language="JavaScript1.1" type="text/javascript"> 
 
 /* This scrambler builds on the work of Jaap Scherphuis, Andrew Nelson, Michael Gottlieb, Waltter Souza, and Lucas Garron. Some parts of it haven't cleaned up in a while, but it works. */
-
-var seed1 = new Date().getTime() + (Math.random()*0xffffffff);
-var seed2 = new Date().getTime() + (Math.random()*0xffffffff);
-var seed3 = new Date().getTime() + (Math.random()*0xffffffff);
-var seed4 = new Date().getTime() + (Math.random()*0xffffffff);
-// Make sure that the seed calculation is not deterministic due to implementation details (this happened with a straight adoption of QBX code, due to attempted bit masking of a float). We do this a few times to reduce the chances of a false negative.
-if (seed1 != seed2 || seed1 != seed3 || seed1 != seed4) {
-	console.log("Seeding Mersenne Twister.");
-	var mt = new MersenneTwisterObject(seed1);
-	setRandomSource(mt);
-}
-else {
-	console.log("WARNING: Unable to generate a unique seed for Mersenne Twister. Falling back to Math.random().");
-}
 
 // Legacy argument parsing, which still works.
 

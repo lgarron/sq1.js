@@ -13,7 +13,7 @@ TODO:
 
 */
 
-var IndexMappingCombinationToIndex, IndexMappingIndexToCombination, IndexMappingIndexToPermutation, IndexMappingNChooseK, IndexMappingOrientationToIndex, IndexMappingPermutationToIndex, b, cubeStateMultiply, i, idState, isEvenPermutation, make2DArray, makeArray, makeArrayZeroed, numStates, randomIntBelow, rs, square1SolverGenerate, square1SolverInitialized, square1SolverSearch, square1SolverSearch2, square1SolverSolution, square1SolverSolution2, square1SolverSolve, square1Solver_N_CORNERS_COMBINATIONS, square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_N_EDGES_COMBINATIONS, square1Solver_N_EDGES_PERMUTATIONS, square1Solver_evenShapeDistance, square1SolverInitialize, square1Solver_oddShapeDistance, square1Solver_shapes, ss1, ss2, stateGetPiecesPermutation, stateGetShapeIndex, stateIsTwistable, stateMultiply, stateToCubeState, _i, _len;
+var IndexMappingCombinationToIndex, IndexMappingIndexToCombination, IndexMappingIndexToPermutation, IndexMappingNChooseK, IndexMappingOrientationToIndex, IndexMappingPermutationToIndex, b, cubeStateMultiply, i, idState, isEvenPermutation, make2DArray, makeArray, makeArrayZeroed, numStates, rs, square1SolverGenerate, square1SolverInitialized, square1SolverSearch, square1SolverSearch2, square1SolverSolution, square1SolverSolution2, square1SolverSolve, square1Solver_N_CORNERS_COMBINATIONS, square1Solver_N_CORNERS_PERMUTATIONS, square1Solver_N_EDGES_COMBINATIONS, square1Solver_N_EDGES_PERMUTATIONS, square1Solver_evenShapeDistance, square1SolverInitialize, square1Solver_oddShapeDistance, square1Solver_shapes, ss1, ss2, stateGetPiecesPermutation, stateGetShapeIndex, stateIsTwistable, stateMultiply, stateToCubeState, _i, _len;
 
 var i = 0;
 
@@ -787,9 +787,9 @@ square1SolverGetRandomPosition = function() {
   if (!square1SolverInitialized) {
     square1SolverInitialize();
   }
-  shape = square1Solver_shapes[randomIntBelow(square1Solver_shapes.length)];
-  cornersPermutation = IndexMappingIndexToPermutation(randomIntBelow(square1Solver_N_CORNERS_PERMUTATIONS), 8);
-  edgesPermutation = IndexMappingIndexToPermutation(randomIntBelow(square1Solver_N_EDGES_PERMUTATIONS), 8);
+  shape = square1Solver_shapes[randomInt.randomUIntBelow(square1Solver_shapes.length)];
+  cornersPermutation = IndexMappingIndexToPermutation(randomInt.randomUIntBelow(square1Solver_N_CORNERS_PERMUTATIONS), 8);
+  edgesPermutation = IndexMappingIndexToPermutation(randomInt.randomUIntBelow(square1Solver_N_EDGES_PERMUTATIONS), 8);
   permutation = makeArray(shape.length);
   for(i = 0; i < shape.length; i++) {
     if (shape[i] < 8) {
@@ -798,7 +798,7 @@ square1SolverGetRandomPosition = function() {
       permutation[i] = 8 + edgesPermutation[shape[i] - 8];
     }
   }
-  middleIsSolved = (randomIntBelow(2) == 1) ? true : false;
+  middleIsSolved = (randomInt.randomUIntBelow(2) == 1) ? true : false;
   return {"permutation": permutation, "middleIsSolved": middleIsSolved};
 };
 
@@ -808,10 +808,6 @@ var square1RandomSource = Math;
 setRandomSource = function(src) {
   square1RandomSource = src;
 }
-
-randomIntBelow = function(n) {
-  return Math.floor(square1RandomSource.random() * n);
-};
 
 isEvenPermutation = function(permutation) {
   var i, j, nInversions;
